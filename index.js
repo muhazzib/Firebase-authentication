@@ -1,6 +1,12 @@
 console.log("Javascript has been loaded");
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
 import {
+  getFirestore,
+  setDoc,
+  doc,
+} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -9,26 +15,30 @@ import {
 } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAcEBwrWc7Oj_gQReRvW6b5bQ1UuV8QiN4",
-  authDomain: "smit-batch-22.firebaseapp.com",
-  projectId: "smit-batch-22",
-  storageBucket: "smit-batch-22.firebasestorage.app",
-  messagingSenderId: "998985140080",
-  appId: "1:998985140080:web:b54861f44bb8f5f768b1b5",
-  measurementId: "G-M61G5NCRLK",
+  apiKey: "AIzaSyCLVEpkktf4bcU9Z4zXP_83aJpY68agDtA",
+  authDomain: "fir-authentication-b8bed.firebaseapp.com",
+  projectId: "fir-authentication-b8bed",
+  storageBucket: "fir-authentication-b8bed.firebasestorage.app",
+  messagingSenderId: "749222606949",
+  appId: "1:749222606949:web:338fc51a8083004d33ae8c",
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
 const auth = getAuth();
+const db = getFirestore(app);
+let isAuthenticating = false;
 
 onAuthStateChanged(auth, (user) => {
+  if (isAuthenticating) {
+    return;
+  }
+
   if (user) {
     if (window.location.pathname !== "/dashboard.html") {
-      
+      window.location.href = "dashboard.html";
     }
-    // ...
   } else {
     console.log("User is signed out");
     if (window.location.pathname === "/dashboard.html") {
@@ -46,24 +56,41 @@ const login = (e) => {
   signInWithEmailAndPassword(auth, email, password).catch((error) => {
     const errorCode = error.code;
     const errorMessage = error.message;
-    console.log(errorMessage, errorCode)
+    console.log(errorMessage, errorCode);
   });
 };
 
 const register = (e) => {
   e.preventDefault();
+  isAuthenticating = true;
 
   const email = document.getElementById("register-email").value;
   const password = document.getElementById("register-password").value;
 
-  createUserWithEmailAndPassword(auth, email, password).catch((error) => {
-    const errorMessage = error.message;
-    alert(errorMessage)
-  });
+  createUserWithEmailAndPassword(auth, email, password)
+    .then(async (userCredential) => {
+      const user = userCredential.user;
+
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        username: "",
+        phone: "",
+        uid: user.uid,
+      });
+
+      window.location.href = "dashboard.html";
+    })
+    .catch((error) => {
+      const errorMessage = error.message;
+      alert(errorMessage);
+    })
+    .finally(() => {
+      isAuthenticating = false;
+    });
 };
 
 const logout = () => {
-  signOut(auth)
+  signOut(auth);
 };
 
 document.getElementById("login-form")?.addEventListener("submit", login);
