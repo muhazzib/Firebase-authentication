@@ -19,13 +19,13 @@ onAuthStateChanged(auth, (user) => {
   }
 
   if (user) {
-    if (window.location.pathname !== "/dashboard.html") {
-      window.location.href = "dashboard.html";
+    if (window.location.pathname !== "/dashboard/dashboard.html") {
+      window.location.href = "../dashboard/dashboard.html";
     }
   } else {
     console.log("User is signed out");
-    if (window.location.pathname === "/dashboard.html") {
-      window.location.href = "login.html";
+    if (window.location.pathname === "/dashboard/dashboard.html") {
+      window.location.href = "../login/login.html";
     }
   }
 });
